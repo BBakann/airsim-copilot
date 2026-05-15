@@ -241,6 +241,53 @@ def estop():
     return jsonify({"estop": cstate.is_estop()}), 200
 
 
+@app.route("/copilot/event", methods=["POST"])
+def copilot_event():
+    data = request.get_json(silent=True) or {}
+    image = data.get("image")
+    if not image:
+        return jsonify({"error": "image gerekli"}), 400
+    out = copilot.analyze_event(
+        image_b64=image,
+        telemetry=data.get("telemetry", {}),
+        state=data.get("state", "?"),
+        prev_state=data.get("prev_state", "?"),
+    )
+    cstate.append_log(out)
+    if out.get("directive"):
+        d = out["directive"]
+        cstate.set_directive(
+            mode=d["mode"], bias=d["bias"], speed_cap=d["speed_cap"],
+            target=d["target"], stop_on=d["stop_on"], ttl=d["ttl"],
+        )
+    return jsonify(out), 200
+
+
+@app.route("/copilot/stream", methods=["GET"])
+def copilot_stream():
+    try:
+        since = float(request.args.get("since", 0))
+    except (TypeError, ValueError):
+        since = 0.0
+    return jsonify({"events": cstate.log_since(since)}), 200
+
+
+@app.route("/copilot/ask", methods=["POST"])
+def copilot_ask():
+    data = request.get_json(silent=True) or {}
+    image = data.get("image") or (last_telemetry.get("image") or "")
+    if not image:
+        return jsonify({"error": "kare yok"}), 400
+    out = copilot.analyze_event(
+        image_b64=image,
+        telemetry=last_telemetry,
+        state=data.get("question", "kullanıcı sorusu"),
+        prev_state="ASK",
+    )
+    cstate.append_log(out)
+    return jsonify(out), 200
+
+
 if __name__ == "__main__":
     app.run(
         host="0.0.0.0",
