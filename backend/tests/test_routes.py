@@ -41,3 +41,13 @@ def test_command_missing_text_is_400(monkeypatch):
     appmod, c = _client(monkeypatch)
     r = c.post("/command", json={})
     assert r.status_code == 400
+
+
+def test_estop_set_and_clear(monkeypatch):
+    appmod, c = _client(monkeypatch)
+    assert c.get("/estop").get_json()["estop"] is False
+    r = c.post("/estop", json={})
+    assert r.status_code == 200
+    assert c.get("/estop").get_json()["estop"] is True
+    c.post("/estop", json={"clear": True})
+    assert c.get("/estop").get_json()["estop"] is False

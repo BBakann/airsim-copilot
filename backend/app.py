@@ -232,6 +232,15 @@ def get_directive():
     return jsonify(cstate.get_directive()), 200
 
 
+@app.route("/estop", methods=["GET", "POST"])
+def estop():
+    if request.method == "POST":
+        data = request.get_json(silent=True) or {}
+        cstate.set_estop(not bool(data.get("clear", False)))
+        return jsonify({"status": "ok", "estop": cstate.is_estop()}), 200
+    return jsonify({"estop": cstate.is_estop()}), 200
+
+
 if __name__ == "__main__":
     app.run(
         host="0.0.0.0",
