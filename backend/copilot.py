@@ -21,6 +21,16 @@ _COMMAND_SYSTEM = (
     "speed_cap 1 döndür. Yalnızca JSON."
 )
 
+_EVENT_SYSTEM = (
+    "Sen otonom bir aracın yardımcı pilotusun. Verilen ön kamera karesi ve "
+    "telemetriye bakıp SADECE şu JSON'u döndür:\n"
+    '{"narration":"kısa Türkçe sahne+durum","risk":"low|warn|critical",'
+    '"suggestion":"kısa öneri","directive":null veya '
+    '{"mode":"explore|goto|stop","bias":-1..1,"speed_cap":0..1,'
+    '"target":[x,y]|null,"stop_on":string|null}}\n'
+    "Sadece JSON, başka metin yok."
+)
+
 
 def _clamp(v: float, lo: float, hi: float) -> float:
     try:
@@ -71,8 +81,58 @@ def _coerce_directive(obj: Optional[dict]) -> dict[str, Any]:
 class Copilot:
     """Single Anthropic touch point. Client injectable for tests."""
 
-    def __init__(self, client: Any = None) -> None:
+    def __init__(self, client: Any = None, debounce_s: float = 3.0) -> None:
         self._client = client
+        self._debounce_s = debounce_s
+        self._last_event_ts = 0.0
+        self._last_event: Optional[dict[str, Any]] = None
+
+    def analyze_event(self, *, image_b64: str, telemetry: dict[str, Any],
+                      state: str, prev_state: str) -> dict[str, Any]:
+        now = time.time()
+        if (self._last_event is not None
+                and now - self._last_event_ts < self._debounce_s):
+            return self._last_event
+
+        if self._client is None:
+            out = {"narration": "Kopilot çevrimdışı (anahtar yok)",
+                   "risk": "unknown", "suggestion": "", "directive": None,
+                   "ts": now}
+            self._last_event, self._last_event_ts = out, now
+            return out
+
+        user_text = (f"Durum: {prev_state} -> {state}. "
+                     f"Telemetri: {json.dumps(telemetry, ensure_ascii=False)}")
+        try:
+            resp = self._client.messages.create(
+                model=MODEL,
+                max_tokens=400,
+                system=[{"type": "text", "text": _EVENT_SYSTEM,
+                         "cache_control": {"type": "ephemeral"}}],
+                messages=[{"role": "user", "content": [
+                    {"type": "image", "source": {
+                        "type": "base64", "media_type": "image/jpeg",
+                        "data": image_b64}},
+                    {"type": "text", "text": user_text},
+                ]}],
+            )
+            obj = _extract_json(resp.content[0].text) or {}
+            risk = obj.get("risk")
+            out = {
+                "narration": obj.get("narration") or "(boş)",
+                "risk": risk if risk in ("low", "warn", "critical") else "unknown",
+                "suggestion": obj.get("suggestion") or "",
+                "directive": (_coerce_directive(obj["directive"])
+                              if obj.get("directive") else None),
+                "ts": now,
+            }
+        except Exception:
+            out = {"narration": "Kopilot analizi başarısız (geçici)",
+                   "risk": "unknown", "suggestion": "", "directive": None,
+                   "ts": now}
+
+        self._last_event, self._last_event_ts = out, now
+        return out
 
     def parse_command(self, text: str) -> dict[str, Any]:
         if self._client is None:
