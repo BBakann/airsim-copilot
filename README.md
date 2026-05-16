@@ -9,6 +9,29 @@ Claude Code (MCP) ile kontrol. **Otonomiye dokunulmaz — kopilot üst katman.**
 
 ---
 
+## 📋 Proje Tanımı
+
+Bu projede, AirSim simülasyon ortamında açık alanlarda otonom hareket edebilen,
+yapay zekâ destekli akıllı bir güvenlik aracı sistemi geliştirilmektedir. Otonom
+sürüş ve sensör entegrasyonu **ROS2 tabanlı modüler düğüm mimarisiyle** tasarlanmış
+olup; LiDAR, mesafe ve GPS sensörleriyle **2B SLAM** yapılarak çevre haritalanmakta
+ve engellerden otonom kaçınılmaktadır. Bu otonomi katmanının üzerinde **Claude
+tabanlı bir yapay zekâ yardımcı pilot** çalışır: ön kamera görüntüsünü yorumlayıp
+sahneyi ve riski operatöre doğal dilde anlatır, operatörün doğal dil komutlarını
+(ör. *"yavaşça sağa dön"*, *"engel görürsen dur"*) araç davranışına çevirir. ROS2
+düğümleri ve merkezi bir servis katmanı sayesinde sensörler, kontrol sistemleri ve
+yapay zekâ modülleri arasında gerçek zamanlı iletişim sağlanır. Aracın hızı, ön
+mesafesi, konumu ve bağlantı durumu gibi anlık bilgiler ile **canlı kamera
+görüntüsü** (ön ve 3. şahıs üst görünüm), geliştirilen mobil uygulama üzerinden
+operatörler tarafından canlı izlenebilmekte; acil durumda araç mobil uygulama veya
+masaüstü üzerinden **uzaktan anında durdurulabilmektedir**. Sistem; kampüsler, site
+içleri, fabrika sahaları ve geniş açık alan güvenliği senaryolarında
+kullanılabilecek şekilde, simülasyon temelinde geliştirilmekte olup gerçek araca
+taşınabilir bir altyapı hedeflenmektedir. Çevredeki kişilerin tespiti ve şüpheli
+durumlarda operatöre bildirim gönderilmesi, hedeflenen genişletmeler arasındadır.
+
+---
+
 ## ✨ Neler var
 
 - **Otonom sürüş** — AirSim'de LiDAR tabanlı engel kaçınma + 2D SLAM + davranış
