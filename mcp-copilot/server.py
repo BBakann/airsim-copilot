@@ -1,3 +1,8 @@
+"""Copilot MCP server (FastMCP, stdio).
+
+5 tool'u client.py'ye delege eder; Claude Code .mcp.json ile başlatır.
+Backend base: MCP_BACKEND_URL (default http://127.0.0.1:5000).
+"""
 from __future__ import annotations
 
 import os

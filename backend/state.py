@@ -1,3 +1,8 @@
+"""Kopilot paylaşılan durumu (thread-safe).
+
+CopilotState: TTL'li directive (süre dolunca güvenli 'explore'), estop
+bayrağı, kapasiteli anlatım log'u. Flask/Anthropic bilmez — saf durum.
+"""
 from __future__ import annotations
 
 import threading

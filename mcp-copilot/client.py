@@ -1,3 +1,8 @@
+"""MCP -> backend HTTP sarmalayıcıları (saf, güvenli degrade).
+
+get_telemetry/get_directive/send_command/set_estop/ask_copilot — hepsi
+backend (:5000) çağırır, hata -> {'error':...}/güvenli değer (raise yok).
+"""
 from __future__ import annotations
 
 from typing import Any

@@ -4,3 +4,7 @@ __pycache__/
 .superpowers/
 node_modules/
 .expo/
+
+# Ayrı git repoları (kök repo bunları izlemez — gömülü-repo gürültüsü engeli)
+hafize-airsim/
+robot-control-app/
