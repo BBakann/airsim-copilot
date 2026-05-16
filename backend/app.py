@@ -41,6 +41,44 @@ def _build_client():
 
 copilot = Copilot(client=_build_client())
 
+from video_state import VideoState
+
+vstate = VideoState()
+
+_VIEWS = ("front", "top")
+# 1x1 gri JPEG (frame yokken placeholder)
+_PLACEHOLDER_JPEG = bytes.fromhex(
+    "ffd8ffe000104a46494600010100000100010000ffdb004300"
+    "08060607060508070707090909"
+    "0c140d0c0b0b0c1912130f141d1a1f1e1d1a1c1c20242e2720"
+    "222c231c1c2837292c30313434341f27393d38323c2e333432"
+    "ffc0000b080001000101011100ffc40014000100000000000000"
+    "00000000000000000009ffc40014100100000000000000000000"
+    "00000000000000ffda0008010100003f00bf80ffd9"
+)
+
+
+def _mjpeg_chunk(data: bytes) -> bytes:
+    return (b"--frame\r\n"
+            b"Content-Type: image/jpeg\r\n"
+            b"Content-Length: " + str(len(data)).encode() + b"\r\n\r\n"
+            + data + b"\r\n")
+
+
+def frame_iter(store, view, max_frames=None, sleep_s=1.0 / 12):
+    """Bounded test edilebilir MJPEG generator. max_frames=None -> sonsuz."""
+    import time as _t
+    n = 0
+    while max_frames is None or n < max_frames:
+        v = store.get_frame(view)
+        if v is not None and not store.is_stale(view):
+            yield _mjpeg_chunk(v[0])
+        else:
+            yield _mjpeg_chunk(_PLACEHOLDER_JPEG)
+        n += 1
+        if max_frames is None or n < max_frames:
+            _t.sleep(sleep_s)
+
 STALE_SECONDS = 8
 
 last_telemetry = {
@@ -211,6 +249,27 @@ def get_telemetry():
 @app.route("/health", methods=["GET"])
 def health():
     return jsonify({"status": "running"}), 200
+
+
+@app.route("/video/push", methods=["POST"])
+def video_push():
+    view = request.args.get("view")
+    if view not in _VIEWS:
+        return jsonify({"error": "view front|top olmalı"}), 400
+    data = request.get_data() or b""
+    vstate.set_frame(view, data)
+    return jsonify({"status": "ok", "bytes": len(data)}), 200
+
+
+@app.route("/video", methods=["GET"])
+def video():
+    view = request.args.get("view")
+    if view not in _VIEWS:
+        return jsonify({"error": "view front|top olmalı"}), 400
+    return app.response_class(
+        frame_iter(vstate, view),
+        mimetype="multipart/x-mixed-replace; boundary=frame",
+    )
 
 
 @app.route("/command", methods=["POST"])
