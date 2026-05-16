@@ -1,3 +1,4 @@
+"""pytest: backend/ klasörünü import path'e ekler (flat: app, state, copilot...)."""
 import sys
 from pathlib import Path
 

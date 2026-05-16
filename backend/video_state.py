@@ -1,3 +1,8 @@
+"""Video kare deposu (thread-safe), state.py'den ayrı.
+
+VideoState: view ('front'/'top') -> (jpeg bytes, ts). Bayatlık kontrolü.
+Sim /video/push ile yazar, /video MJPEG generator buradan okur.
+"""
 from __future__ import annotations
 
 import threading

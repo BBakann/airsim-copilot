@@ -1,3 +1,9 @@
+"""Tek Anthropic temas noktası.
+
+Copilot.parse_command: doğal dil -> directive JSON (güvenli default'a düşer).
+Copilot.analyze_event: kamera karesi+telemetri -> anlatım/risk/directive,
+3sn debounce, anahtar yok/hata -> degrade (sürüşü asla bloklamaz).
+"""
 from __future__ import annotations
 
 import json

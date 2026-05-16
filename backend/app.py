@@ -1,3 +1,14 @@
+"""SafeWay backend hub — tek Flask sunucu.
+
+Sim (hafize-airsim) telemetri/olay POST eder, mobil ve MCP buradan okur.
+Endpoint grupları:
+  /data /telemetry            -> telemetri (sim -> mobil)
+  /command /directive /estop  -> kopilot komut + acil dur
+  /copilot/event /stream /ask -> Claude analiz (copilot.py üzerinden)
+  /video/push /video          -> MJPEG video kanalı (video_state.py)
+Durum: state.py (kopilot) + video_state.py (kareler). Anthropic teması
+yalnız copilot.py. Çalıştır: PYTHONIOENCODING=utf-8 python backend/app.py
+"""
 from __future__ import annotations
 
 from flask import Flask, request, jsonify
