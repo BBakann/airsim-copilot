@@ -1,4 +1,4 @@
-"""SafeWay backend hub — tek Flask sunucu.
+"""AirSim Kopilot backend hub — tek Flask sunucu.
 
 Sim (hafize-airsim) telemetri/olay POST eder, mobil ve MCP buradan okur.
 Endpoint grupları:

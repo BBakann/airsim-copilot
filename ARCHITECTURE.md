@@ -1,4 +1,4 @@
-# SafeWay AirSim Kopilot — Mimari
+# AirSim Kopilot — Mimari
 
 AirSim otonom araç + Claude kopilot + mobil. Otonomi (SLAM/LiDAR/planlayıcı)
 alttan sürer, **dokunulmaz**; Claude üst katman (anlat/komut/uyar).
